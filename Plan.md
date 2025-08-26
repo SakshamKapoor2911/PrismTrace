@@ -94,6 +94,9 @@ Response: `{ "status": "ok" }`
 - [x] Implement `@trace` decorator
 - [x] Mock multi-agent workflow for demo
 - [x] Send trace events to backend (simulate for demo)
+- [ ] Integrate Groq LLM call in agent (using GROQ_API_KEY from .env)
+- [ ] Capture and display real prompt, response, and error in trace output
+- [ ] Improve error reporting in terminal: show error type, message, stack trace line, protocol type, and payloads
 
 ### Mock Multi-Agent Workflow Example
 ```python
@@ -111,8 +114,8 @@ def child_agent_1():
 
 @trace
 def child_agent_2():
-    # Simulate failure
-    raise Exception("Subagent failed")
+    # Integrate Groq LLM call here
+    pass
 
 if __name__ == "__main__":
     try:
@@ -120,9 +123,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Workflow failed: {e}")
 ```
-
-### Trace Event Sending (Simulated)
-- The `@trace` decorator automatically sends span data to the backend using the `TraceClient.send_trace()` method, as implemented in the decorator.
 
 ---
 ## Production Improvements for Multi-Agent Systems
@@ -145,13 +145,18 @@ To make PrismTrace production-ready for large-scale, multi-agent AI workflows, t
 - [ ] Prepopulate with sample trace data
 
 ## 5. Next.js Frontend
-- [ ] Scaffold Next.js app
-- [ ] Implement waterfall trace viewer
-- [ ] Highlight error spans and show details
-- [ ] Connect to backend (mock data for demo)
+- [x] Scaffold Next.js app
+- [x] Implement waterfall trace viewer
+- [x] Highlight error spans and show details
+- [x] Preload demo trace data for instant dashboard experience
+- [ ] Make spans clickable to show error details, stack trace, LLM input/output, protocol, and model info
+- [ ] Visualize call hierarchy with indentation/tree lines
+- [ ] Add filter/search bar for agents/errors
+- [ ] Add live/streaming mode to show new traces in real time
+- [ ] Deploy dashboard to Vercel
 
 ## 6. Demo & Recording
-- [ ] Write demo script
+- [ ] Write demo script (CLI pain, dashboard magic moment)
 - [ ] Record demo video
 - [ ] Prepare README and documentation
 

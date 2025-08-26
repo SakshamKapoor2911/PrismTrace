@@ -1,0 +1,56 @@
+{
+  "spans": [
+    {
+      "span_id": "1",
+      "agent_name": "child_agent_1",
+      "protocol_type": "MCP",
+      "status": "success",
+      "error": null,
+      "input_payload": "What is the capital of France?",
+      "output_payload": "Paris",
+      "indent": 1
+    },
+    {
+      "span_id": "2",
+      "agent_name": "child_agent_2",
+      "protocol_type": "MCP",
+      "status": "failure",
+      "error": {
+        "type": "Exception",
+        "message": "Groq LLM call failed: 404 Client Error: Not Found for url: https://api.groq.com/v1/chat/completions",
+        "stack_trace": "Traceback (most recent call last): ..."
+      },
+      "input_payload": "Tell me about the color of the number seven.",
+      "output_payload": "Sample response",
+      "indent": 1
+    },
+    {
+      "span_id": "3",
+      "agent_name": "broken_agent",
+      "protocol_type": "FunctionCall",
+      "status": "failure",
+      "error": {
+        "type": "ZeroDivisionError",
+        "message": "division by zero",
+        "stack_trace": "Traceback (most recent call last): ..."
+      },
+      "input_payload": "N/A",
+      "output_payload": "N/A",
+      "indent": 1
+    },
+    {
+      "span_id": "4",
+      "agent_name": "parent_agent",
+      "protocol_type": "MCP",
+      "status": "failure",
+      "error": {
+        "type": "Exception",
+        "message": "Groq LLM call failed: 404 Client Error: Not Found for url: https://api.groq.com/v1/chat/completions",
+        "stack_trace": "Traceback (most recent call last): ..."
+      },
+      "input_payload": "N/A",
+      "output_payload": "N/A",
+      "indent": 0
+    }
+  ]
+}
