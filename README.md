@@ -8,16 +8,24 @@ PrismTrace is a universal control plane for multi-agent AI systems, providing in
 - **Error pinpointing:** Instantly see which agent failed and why.
 - **Protocol-agnostic:** Designed for MCP (developer standard), with clear path to A2A (enterprise standard).
 
+## System Design & Data Model
+- **Trace:** Unique ID, root span, timestamps, status
+- **Span:** Unique ID, parent span, agent name, timestamps, status, error
+- **Error:** Type, message, stack trace
+- **API:** POST /api/trace with trace and spans
+- **DB:** ClickHouse tables for traces and spans
+
 ## Demo Workflow
 
 ```mermaid
 graph TD
-    A[User Python Agent Workflow] -->|@Prism.trace Decorator| B[Trace Event Sent]
-    B --> C[Go Ingestion API]
-    C --> D[ClickHouse DB]
-    D --> E[Next.js Dashboard]
-    E --> F[Waterfall Trace Visualization]
-    F --> G[Error Highlight & Details]
+    AgentCode[Python Agent Code] --> Decorator[Prism.trace Decorator]
+    Decorator --> TraceEvent[Trace Event]
+    TraceEvent --> IngestionAPI[Go Ingestion API]
+    IngestionAPI --> DB[ClickHouse DB]
+    DB --> Dashboard[Next.js Dashboard]
+    Dashboard --> Waterfall[Waterfall Trace Viewer]
+    Waterfall --> Error[Error Highlight]
 ```
 
 ## Example: Mock Multi-Agent System
