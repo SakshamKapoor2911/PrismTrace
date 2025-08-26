@@ -90,10 +90,49 @@ Response: `{ "status": "ok" }`
 - `output_payload` String
 
 ## 2. Python SDK
-- [ ] Scaffold SDK package structure
-- [ ] Implement `@trace` decorator
-- [ ] Mock multi-agent workflow for demo
-- [ ] Send trace events to backend (simulate for demo)
+- [x] Scaffold SDK package structure
+- [x] Implement `@trace` decorator
+- [x] Mock multi-agent workflow for demo
+- [x] Send trace events to backend (simulate for demo)
+
+### Mock Multi-Agent Workflow Example
+```python
+from prismtrace.decorator import trace
+
+@trace
+def parent_agent():
+    child_agent_1()
+    child_agent_2()
+
+@trace
+def child_agent_1():
+    # Simulate success
+    pass
+
+@trace
+def child_agent_2():
+    # Simulate failure
+    raise Exception("Subagent failed")
+
+if __name__ == "__main__":
+    try:
+        parent_agent()
+    except Exception as e:
+        print(f"Workflow failed: {e}")
+```
+
+### Trace Event Sending (Simulated)
+- The `@trace` decorator automatically sends span data to the backend using the `TraceClient.send_trace()` method, as implemented in the decorator.
+
+---
+## Production Improvements for Multi-Agent Systems
+To make PrismTrace production-ready for large-scale, multi-agent AI workflows, the following enhancements are planned:
+- Aggregate all spans from a workflow under a single `trace_id`.
+- Build a call graph by setting `parent_span_id` correctly for each span.
+- Send trace events to a real backend (Go API) and store in ClickHouse DB.
+- Handle concurrency, distributed workflows, and large-scale data.
+- Integrate with real agent frameworks and LLM APIs.
+- Add support for async/concurrent agent calls.
 
 ## 3. Go Ingestion API
 - [ ] Scaffold Go API project

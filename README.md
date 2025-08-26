@@ -63,5 +63,14 @@ if __name__ == "__main__":
 - **ClickHouse DB:** Store and query traces.
 - **Next.js Frontend:** Waterfall trace viewer.
 
+## Path to Production Readiness
+PrismTrace MVP demonstrates core tracing and debugging for agent workflows. For full production use in multi-agent systems, the following enhancements are planned:
+- Aggregate all spans from a workflow under a single `trace_id`.
+- Build a call graph by setting `parent_span_id` correctly for each span.
+- Send trace events to a real backend (Go API) and store in ClickHouse DB.
+- Handle concurrency, distributed workflows, and large-scale data.
+- Integrate with real agent frameworks and LLM APIs.
+- Add support for async/concurrent agent calls.
+
 ---
 PrismTrace is designed for rapid developer adoption and seamless expansion to enterprise standards. The MVP delivers the "magic moment" of instant clarity for agent debugging, with a clear path to full protocol support and advanced governance features.
