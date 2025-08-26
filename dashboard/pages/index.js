@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import demoTrace from '../demo-trace.json';
+import dynamic from 'next/dynamic';
+const WorkflowGraph = dynamic(() => import('../components/WorkflowGraph'), { ssr: false });
 
 function TraceSpan({ span, onClick, selected }) {
   const isError = span.status !== 'success';
@@ -44,38 +46,55 @@ export default function Home() {
     ...span,
     isLast: i === arr.length - 1 || arr[i + 1].indent < span.indent
   }));
+  // Find selected span by id (for graph click)
+  const selectedSpan = selected !== null ? spans[selected] : null;
   return (
-    <div style={{maxWidth: 700, margin: '40px auto', fontFamily: 'sans-serif'}}>
-      <h2>PrismTrace Demo: Debugging a failed Groq/Gemini LLM call.</h2>
-      <input
-        type="text"
-        placeholder="Filter by agent or error..."
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-        style={{marginBottom: 16, padding: 8, width: '100%', fontSize: 16}}
-      />
-      <div style={{marginBottom: 24}}>
-        {spans.map((span, i) => (
-          <TraceSpan
-            key={span.span_id}
-            span={span}
-            selected={selected === i}
-            onClick={() => setSelected(i)}
-          />
-        ))}
+    <div style={{maxWidth: 900, margin: '40px auto', fontFamily: 'Inter, sans-serif', background: '#f6f8fa', borderRadius: 18, boxShadow: '0 8px 32px rgba(0,0,0,0.07)', padding: 32}}>
+      <h2 style={{fontWeight: 700, fontSize: 28, marginBottom: 8, color: '#222'}}>PrismTrace: Multi-Agent Workflow Visualization</h2>
+      <p style={{color: '#666', marginBottom: 24}}>Instantly debug and visualize agent workflows, errors, and LLM calls. Click nodes or spans for details.</p>
+      <WorkflowGraph trace={demoTrace} onNodeClick={node => {
+        // Find span index by node id
+        const idx = spans.findIndex(s => s.span_id === node.id);
+        if (idx !== -1) setSelected(idx);
+      }} />
+      <div style={{margin: '32px 0 24px 0'}}>
+        <input
+          type="text"
+          placeholder="Filter by agent or error..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{marginBottom: 16, padding: 10, width: '100%', fontSize: 17, borderRadius: 8, border: '1px solid #e0e0e0', boxShadow: '0 1px 4px rgba(0,0,0,0.03)'}}
+        />
+        <div>
+          {spans.map((span, i) => (
+            <TraceSpan
+              key={span.span_id}
+              span={span}
+              selected={selected === i}
+              onClick={() => setSelected(i)}
+            />
+          ))}
+        </div>
       </div>
-      {selected !== null && (
-        <div style={{border: '1px solid #eee', padding: 16, background: '#fff'}}>
-          <h4>Error Details</h4>
-          <pre style={{color: '#e00'}}>{spans[selected].error ? JSON.stringify(spans[selected].error, null, 2) : 'No error'}</pre>
-          <h4>LLM Input</h4>
-          <pre>{spans[selected].input_payload}</pre>
-          <h4>LLM Output</h4>
-          <pre>{spans[selected].output_payload}</pre>
-          <h4>Protocol</h4>
-          <pre>{spans[selected].protocol_type}</pre>
-          <h4>Model</h4>
-          <pre>{spans[selected].llm_model_name || 'N/A'}</pre>
+      {selectedSpan && (
+        <div style={{border: '1px solid #eee', padding: 20, background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.04)', marginBottom: 16}}>
+          <h3 style={{color: selectedSpan.error ? '#e57373' : '#1976d2', marginBottom: 8}}>
+            {selectedSpan.agent_name} {selectedSpan.error ? 'Error' : 'Details'}
+          </h3>
+          {selectedSpan.error && (
+            <>
+              <h4 style={{margin: '8px 0 4px 0'}}>Error</h4>
+              <pre style={{color: '#e00', background: '#ffebee', padding: 8, borderRadius: 6}}>{JSON.stringify(selectedSpan.error, null, 2)}</pre>
+            </>
+          )}
+          <h4 style={{margin: '8px 0 4px 0'}}>LLM Input</h4>
+          <pre style={{background: '#f5f5f5', padding: 8, borderRadius: 6}}>{selectedSpan.input_payload}</pre>
+          <h4 style={{margin: '8px 0 4px 0'}}>LLM Output</h4>
+          <pre style={{background: '#f5f5f5', padding: 8, borderRadius: 6}}>{selectedSpan.output_payload}</pre>
+          <h4 style={{margin: '8px 0 4px 0'}}>Protocol</h4>
+          <pre style={{background: '#f5f5f5', padding: 8, borderRadius: 6}}>{selectedSpan.protocol_type}</pre>
+          <h4 style={{margin: '8px 0 4px 0'}}>Model</h4>
+          <pre style={{background: '#f5f5f5', padding: 8, borderRadius: 6}}>{selectedSpan.llm_model_name || 'N/A'}</pre>
         </div>
       )}
       <footer style={{marginTop: 40, fontSize: 13, color: '#888'}}>Demo trace data preloaded for instant YC experience.</footer>
