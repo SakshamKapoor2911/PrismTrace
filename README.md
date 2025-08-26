@@ -12,6 +12,7 @@ PrismTrace is a universal control plane for multi-agent AI systems, providing in
 - **Trace:** Unique ID, root span, timestamps, status
 - **Span:** Unique ID, parent span, agent name, timestamps, status, error
 - **Error:** Type, message, stack trace
+- **AI Metadata:** protocol_type, llm_model_name, token_counts, input/output payloads
 - **API:** POST /api/trace with trace and spans
 - **DB:** ClickHouse tables for traces and spans
 
@@ -26,6 +27,7 @@ graph TD
     DB --> Dashboard[Next.js Dashboard]
     Dashboard --> Waterfall[Waterfall Trace Viewer]
     Waterfall --> Error[Error Highlight]
+    Waterfall --> AIMeta[AI Metadata: protocol_type, model, tokens, payloads]
 ```
 
 ## Example: Mock Multi-Agent System

@@ -6,6 +6,7 @@ This checklist outlines the sequential steps to build the minimal demo for Prism
 - [x] Define trace, span, and error data models
 - [x] Specify API contract for trace ingestion
 - [x] Design ClickHouse schema for traces
+- [x] Capture AI-specific metadata in spans (protocol_type, llm_model_name, token_counts, input/output payloads)
 
 ### Trace Data Model
 - `trace_id`: Unique identifier for the workflow execution.
@@ -20,6 +21,11 @@ This checklist outlines the sequential steps to build the minimal demo for Prism
 - `start_time`, `end_time`: Timestamps for the span.
 - `status`: Success or failure.
 - `error`: Error object (if any).
+- `protocol_type`: "MCP", "A2A", "FunctionCall" (Essential for bridge vision)
+- `llm_model_name`: e.g., "gemini-1.5-pro"
+- `token_counts`: { "prompt": 1024, "completion": 512 } (Crucial for cost control)
+- `input_payload`: The actual prompt or data sent to the agent.
+- `output_payload`: The final response or data from the agent.
 
 ### Error Data Model
 - `error_id`: Unique identifier.
@@ -46,7 +52,12 @@ Request Body:
         "type": "string",
         "message": "string",
         "stack_trace": "string"
-      }
+      },
+      "protocol_type": "MCP",
+      "llm_model_name": "gemini-1.5-pro",
+      "token_counts": { "prompt": 1024, "completion": 512 },
+      "input_payload": "...",
+      "output_payload": "..."
     }
   ]
 }
@@ -72,6 +83,11 @@ Response: `{ "status": "ok" }`
 - `error_type` String
 - `error_message` String
 - `stack_trace` String
+- `protocol_type` String
+- `llm_model_name` String
+- `token_counts` JSON
+- `input_payload` String
+- `output_payload` String
 
 ## 2. Python SDK
 - [ ] Scaffold SDK package structure
@@ -101,4 +117,4 @@ Response: `{ "status": "ok" }`
 - [ ] Prepare README and documentation
 
 ---
-This plan ensures a clear path to MVP, with each step building towards a compelling, recordable demo for YC.
+Checklist order and prioritization is optimal: system design first, then SDK, backend, DB, frontend, and demo. Each step builds on the previous, ensuring rapid, focused MVP delivery.
