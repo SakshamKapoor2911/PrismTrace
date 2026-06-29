@@ -94,9 +94,9 @@ Response: `{ "status": "ok" }`
 - [x] Implement `@trace` decorator
 - [x] Mock multi-agent workflow for demo
 - [x] Send trace events to backend (simulate for demo)
-- [ ] Integrate Groq LLM call in agent (using GROQ_API_KEY from .env)
-- [ ] Capture and display real prompt, response, and error in trace output
-- [ ] Improve error reporting in terminal: show error type, message, stack trace line, protocol type, and payloads
+- [x] Integrate Groq LLM call in agent (using GROQ_API_KEY from .env)
+- [x] Capture and display real prompt, response, and error in trace output
+- [x] Improve error reporting in terminal: show error type, message, stack trace line, protocol type, and payloads
 
 ### Mock Multi-Agent Workflow Example
 ```python
@@ -140,9 +140,9 @@ To make PrismTrace production-ready for large-scale, multi-agent AI workflows, t
 - [ ] Integrate with ClickHouse (mock for demo)
 
 ## 4. ClickHouse Database
-- [ ] Define minimal schema for traces/spans
-- [ ] Set up local ClickHouse instance (optional for demo)
-- [ ] Prepopulate with sample trace data
+- [x] Define minimal schema for traces/spans
+- [x] Set up local ClickHouse instance (optional for demo)
+- [x] Prepopulate with sample trace data
 
 ## 5. Next.js Frontend
 - [x] Scaffold Next.js app
@@ -158,7 +158,7 @@ To make PrismTrace production-ready for large-scale, multi-agent AI workflows, t
 ## 6. Demo & Recording
 - [ ] Write demo script (CLI pain, dashboard magic moment)
 - [ ] Record demo video
-- [ ] Prepare README and documentation
+- [x] Prepare README and documentation
 
 ---
 Checklist order and prioritization is optimal: system design first, then SDK, backend, DB, frontend, and demo. Each step builds on the previous, ensuring rapid, focused MVP delivery.
