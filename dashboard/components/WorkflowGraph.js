@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import ReactFlow, { Controls, Background, MiniMap, Handle } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -61,7 +61,7 @@ function traceToGraph(trace) {
 const nodeTypes = { agentNode: AgentNode };
 
 const WorkflowGraph = ({ trace, onNodeClick }) => {
-  const { nodes, edges } = traceToGraph(trace);
+  const { nodes, edges } = useMemo(() => traceToGraph(trace), [trace]);
   return (
     <div style={{ height: 520, width: '100%', borderRadius: 16, background: '#fafbfc', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', padding: 8 }}>
       <ReactFlow
