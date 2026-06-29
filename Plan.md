@@ -158,7 +158,7 @@ To make PrismTrace production-ready for large-scale, multi-agent AI workflows, t
 ## 6. Demo & Recording
 - [ ] Write demo script (CLI pain, dashboard magic moment)
 - [ ] Record demo video
-- [ ] Prepare README and documentation
+- [x] Prepare README and documentation
 
 ---
 Checklist order and prioritization is optimal: system design first, then SDK, backend, DB, frontend, and demo. Each step builds on the previous, ensuring rapid, focused MVP delivery.
