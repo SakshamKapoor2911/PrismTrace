@@ -15,8 +15,10 @@ def child_agent_1():
     prompt = "What is the capital of France?"
     try:
         response = requests.post(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + api_key,
-            json={"contents": [{"parts": [{"text": prompt}]}]}
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+            headers={"x-goog-api-key": api_key},
+            json={"contents": [{"parts": [{"text": prompt}]}]},
+            timeout=10
         )
         response.raise_for_status()
         result = response.json()
@@ -36,7 +38,8 @@ def child_agent_2():
             json={
                 "model": "gemini-1.5-pro",
                 "messages": [{"role": "user", "content": prompt}]
-            }
+            },
+            timeout=10
         )
         response.raise_for_status()
         result = response.json()
