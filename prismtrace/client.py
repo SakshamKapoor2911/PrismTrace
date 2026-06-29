@@ -42,7 +42,7 @@ class TraceClient:
             return dt.strftime("%H:%M:%SZ")
         return t
 
-    def print_span_summary(self, span, indent=0, all_spans=None, branch_symbol=BRANCH):
+    def print_span_summary(self, span, indent=0, all_spans=None, branch_symbol=BRANCH, children_map=None):
         status = span.get("status", "")
         agent = span.get("agent_name", "")
         model = span.get("llm_model_name", "")
@@ -73,7 +73,12 @@ class TraceClient:
             if output_payload:
                 print(f"{prefix}  Output: {output_payload}")
         # Print children if any
-        if all_spans:
+        if children_map is not None:
+            children = children_map.get(span.get("span_id"), [])
+            for i, child in enumerate(children):
+                child_branch = BRANCH if i < len(children)-1 else END
+                self.print_span_summary(child, indent=indent+1, all_spans=all_spans, branch_symbol=child_branch, children_map=children_map)
+        elif all_spans:
             children = [s for s in all_spans if s.get("parent_span_id") == span.get("span_id")]
             for i, child in enumerate(children):
                 child_branch = BRANCH if i < len(children)-1 else END
@@ -85,10 +90,19 @@ class TraceClient:
         print(f"[PrismTrace] Trace sent: {trace_id}")
         success_count = 0
         fail_count = 0
+
+        # Pre-compute children map for O(1) lookups instead of O(N)
+        children_map = {}
+        for s in spans:
+            pid = s.get("parent_span_id")
+            if pid not in children_map:
+                children_map[pid] = []
+            children_map[pid].append(s)
+
         # Find root spans (no parent)
         roots = [s for s in spans if not s.get("parent_span_id")]
         for root in roots:
-            self.print_span_summary(root, indent=0, all_spans=spans)
+            self.print_span_summary(root, indent=0, all_spans=spans, children_map=children_map)
         for span in spans:
             if span.get("status") == "success":
                 success_count += 1
