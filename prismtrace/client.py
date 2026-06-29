@@ -63,15 +63,20 @@ class TraceClient:
                 print(f"{prefix}  {RED}Error Message: {error.get('message', '')}{RESET}")
                 stack = error.get("stack_trace", "")
                 if stack:
-                    stack_lines = [line for line in stack.splitlines() if line.strip()]
-                    if stack_lines:
-                        print(f"{prefix}  {RED}Stack Trace: {stack_lines[-1]}{RESET}")
+                    stack_lines = [line.strip() for line in stack.splitlines() if line.strip()]
+                    # Find the last line that starts with 'File "' to indicate the failing frame
+                    stack_trace_line = next((line for line in reversed(stack_lines) if line.startswith('File "')), stack_lines[-1] if stack_lines else "")
+                    if stack_trace_line:
+                        print(f"{prefix}  {RED}Stack Trace: {stack_trace_line}{RESET}")
+            if protocol:
+                print(f"{prefix}  {RED}Protocol: {protocol}{RESET}")
+
             input_payload = span.get("input_payload")
             output_payload = span.get("output_payload")
             if input_payload:
-                print(f"{prefix}  Input: {input_payload}")
+                print(f"{prefix}  Input Payload: {input_payload}")
             if output_payload:
-                print(f"{prefix}  Output: {output_payload}")
+                print(f"{prefix}  Output Payload: {output_payload}")
         # Print children if any
         if all_spans:
             children = [s for s in all_spans if s.get("parent_span_id") == span.get("span_id")]

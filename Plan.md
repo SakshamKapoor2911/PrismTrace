@@ -96,7 +96,7 @@ Response: `{ "status": "ok" }`
 - [x] Send trace events to backend (simulate for demo)
 - [ ] Integrate Groq LLM call in agent (using GROQ_API_KEY from .env)
 - [ ] Capture and display real prompt, response, and error in trace output
-- [ ] Improve error reporting in terminal: show error type, message, stack trace line, protocol type, and payloads
+- [x] Improve error reporting in terminal: show error type, message, stack trace line, protocol type, and payloads
 
 ### Mock Multi-Agent Workflow Example
 ```python
