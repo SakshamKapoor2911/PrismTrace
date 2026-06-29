@@ -39,7 +39,7 @@ function filterSpans(spans, query) {
 }
 
 export default function Home() {
-  const [selected, setSelected] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
   const [search, setSearch] = useState('');
   // Compute isLast for call hierarchy
   const spans = filterSpans(demoTrace.spans, search).map((span, i, arr) => ({
@@ -47,15 +47,13 @@ export default function Home() {
     isLast: i === arr.length - 1 || arr[i + 1].indent < span.indent
   }));
   // Find selected span by id (for graph click)
-  const selectedSpan = selected !== null ? spans[selected] : null;
+  const selectedSpan = selectedId !== null ? spans.find(s => s.span_id === selectedId) : null;
   return (
     <div style={{maxWidth: 900, margin: '40px auto', fontFamily: 'Inter, sans-serif', background: '#f6f8fa', borderRadius: 18, boxShadow: '0 8px 32px rgba(0,0,0,0.07)', padding: 32}}>
       <h2 style={{fontWeight: 700, fontSize: 28, marginBottom: 8, color: '#222'}}>PrismTrace: Multi-Agent Workflow Visualization</h2>
       <p style={{color: '#666', marginBottom: 24}}>Instantly debug and visualize agent workflows, errors, and LLM calls. Click nodes or spans for details.</p>
-      <WorkflowGraph trace={demoTrace} onNodeClick={node => {
-        // Find span index by node id
-        const idx = spans.findIndex(s => s.span_id === node.id);
-        if (idx !== -1) setSelected(idx);
+      <WorkflowGraph trace={demoTrace} searchQuery={search} onNodeClick={node => {
+        setSelectedId(node.id);
       }} />
       <div style={{margin: '32px 0 24px 0'}}>
         <input
@@ -66,12 +64,12 @@ export default function Home() {
           style={{marginBottom: 16, padding: 10, width: '100%', fontSize: 17, borderRadius: 8, border: '1px solid #e0e0e0', boxShadow: '0 1px 4px rgba(0,0,0,0.03)'}}
         />
         <div>
-          {spans.map((span, i) => (
+          {spans.map((span) => (
             <TraceSpan
               key={span.span_id}
               span={span}
-              selected={selected === i}
-              onClick={() => setSelected(i)}
+              selected={selectedId === span.span_id}
+              onClick={() => setSelectedId(span.span_id)}
             />
           ))}
         </div>

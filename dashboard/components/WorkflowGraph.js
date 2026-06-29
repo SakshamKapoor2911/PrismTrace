@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import ReactFlow, { Controls, Background, MiniMap, Handle } from 'reactflow';
 import 'reactflow/dist/style.css';
 
@@ -14,6 +14,8 @@ function AgentNode({ data }) {
       minWidth: 220,
       fontFamily: 'Inter, sans-serif',
       position: 'relative',
+      opacity: data.isMatched === false ? 0.3 : 1,
+      transition: 'opacity 0.2s',
     }}>
       <Handle type="target" position="top" style={{ background: '#1976d2', width: 12, height: 12, borderRadius: 6 }} />
       <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4, color: data.error ? '#e57373' : '#1976d2' }}>{data.agent_name}</div>
@@ -30,18 +32,30 @@ function AgentNode({ data }) {
 }
 
 // Utility to convert trace data to React Flow nodes/edges
-function traceToGraph(trace) {
+function traceToGraph(trace, searchQuery = '') {
   if (!trace || !trace.spans) return { nodes: [], edges: [] };
   // Simple vertical layout for demo
   const yStep = 120;
-  const nodes = trace.spans.map((span, i) => ({
-    id: span.span_id,
-    type: 'agentNode',
-    data: {
-      ...span
-    },
-    position: { x: 100 + i * 240, y: 60 + i * yStep },
-  }));
+
+  const q = searchQuery.toLowerCase();
+
+  const nodes = trace.spans.map((span, i) => {
+    let isMatched = true;
+    if (q) {
+      isMatched = Boolean(span.agent_name.toLowerCase().includes(q) ||
+        (span.error && JSON.stringify(span.error).toLowerCase().includes(q)));
+    }
+
+    return {
+      id: span.span_id,
+      type: 'agentNode',
+      data: {
+        ...span,
+        isMatched
+      },
+      position: { x: 100 + i * 240, y: 60 + i * yStep },
+    };
+  });
   const edges = trace.spans
     .filter(span => span.parent_id)
     .map(span => ({
@@ -60,8 +74,8 @@ function traceToGraph(trace) {
 
 const nodeTypes = { agentNode: AgentNode };
 
-const WorkflowGraph = ({ trace, onNodeClick }) => {
-  const { nodes, edges } = traceToGraph(trace);
+const WorkflowGraph = ({ trace, searchQuery, onNodeClick }) => {
+  const { nodes, edges } = useMemo(() => traceToGraph(trace, searchQuery), [trace, searchQuery]);
   return (
     <div style={{ height: 520, width: '100%', borderRadius: 16, background: '#fafbfc', boxShadow: '0 4px 24px rgba(0,0,0,0.07)', padding: 8 }}>
       <ReactFlow
