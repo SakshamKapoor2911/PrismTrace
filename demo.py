@@ -3,20 +3,24 @@ import os
 import requests
 
 @trace
-def parent_agent():
-    child_agent_1()
-    child_agent_2()
-    broken_agent()
+def parent_agent(prompt="Start workflow"):
+    try:
+        res1 = child_agent_1(prompt="What is the capital of France?")
+        res2 = child_agent_2(prompt="Tell me about the color of the number seven.")
+        broken_agent(prompt="Trigger error")
+        return f"Results: {res1}, {res2}"
+    except Exception as e:
+        raise e
 
 @trace
-def child_agent_1():
+def child_agent_1(prompt):
     # Gemini LLM call
-    api_key = os.getenv("GEMINI_API_KEY")
-    prompt = "What is the capital of France?"
+    api_key = os.getenv("GEMINI_API_KEY", "dummy_key")
     try:
         response = requests.post(
             "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + api_key,
-            json={"contents": [{"parts": [{"text": prompt}]}]}
+            json={"contents": [{"parts": [{"text": prompt}]}]},
+            timeout=10
         )
         response.raise_for_status()
         result = response.json()
@@ -25,10 +29,9 @@ def child_agent_1():
         raise Exception(f"Gemini LLM call failed: {e}")
 
 @trace
-def child_agent_2():
+def child_agent_2(prompt):
     # Groq LLM call
-    api_key = os.getenv("GROQ_API_KEY")
-    prompt = "Tell me about the color of the number seven."
+    api_key = os.getenv("GROQ_API_KEY", "dummy_key")
     try:
         response = requests.post(
             "https://api.groq.com/v1/chat/completions",
@@ -36,7 +39,8 @@ def child_agent_2():
             json={
                 "model": "gemini-1.5-pro",
                 "messages": [{"role": "user", "content": prompt}]
-            }
+            },
+            timeout=10
         )
         response.raise_for_status()
         result = response.json()
@@ -45,7 +49,7 @@ def child_agent_2():
         raise Exception(f"Groq LLM call failed: {e}")
 
 @trace
-def broken_agent():
+def broken_agent(prompt):
     # Manual hardcoded error
     x = 1 / 0  # Division by zero
 
