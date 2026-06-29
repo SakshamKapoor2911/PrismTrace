@@ -15,7 +15,7 @@ SEP = "-" * 56
 
 class TraceClient:
     def __init__(self, endpoint=None):
-        self.endpoint = endpoint or "http://localhost:8000/api/trace"
+        self.endpoint = endpoint or "https://localhost:8000/api/trace"
         self.traces = []  # Store traces for inspection
 
     def _parse_time(self, t):
