@@ -3,6 +3,7 @@ import requests
 from .client import TraceClient
 from .utils import generate_id, now_iso
 import traceback
+import sys
 import functools
 import contextvars
 
@@ -34,9 +35,9 @@ def get_ai_metadata(prompt=None, response=None, error=None):
         "protocol_type": "MCP",
         "llm_model_name": "gemini-1.5-pro",
         "token_counts": {"prompt": 1024, "completion": 512},
-        "input_payload": prompt or "Sample prompt",
-        "output_payload": response or "Sample response",
-        "error_message": error or None
+        "input_payload": prompt,
+        "output_payload": response,
+        "error_message": error
     }
 
 def trace(func):
@@ -64,24 +65,35 @@ def trace(func):
         error = None
         status = "success"
         result = None
-        prompt = None
+        prompt = kwargs.get("prompt")
+        if not prompt and args and isinstance(args[0], str):
+            prompt = args[0]
         response = None
         error_msg = None
+        captured_exc = None
         try:
-            if agent_name == "child_agent_2":
-                prompt = "Tell me about the color of the number seven."
-                response, error_msg = groq_llm_call(prompt)
-                if error_msg:
-                    raise Exception(error_msg)
-                result = response
-            else:
-                result = func(*args, **kwargs)
-        except Exception as exc:
+            result = func(*args, **kwargs)
+            response = str(result) if result is not None else None
+        except Exception as raised_exc:
+            captured_exc = raised_exc
             status = "failure"
+            error_msg = str(raised_exc)
+
+            # Security Directive: Do not expose raw stack traces in error payloads.
+            # Extract safe stack trace information instead.
+            safe_stack_trace = ""
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            if exc_tb is not None:
+                tb_list = traceback.extract_tb(exc_tb)
+                if tb_list:
+                    # Just the last file and line, not the full stack
+                    last_frame = tb_list[-1]
+                    safe_stack_trace = f"File {last_frame.filename}, line {last_frame.lineno}, in {last_frame.name}"
+
             error = {
-                "type": type(exc).__name__,
-                "message": str(exc),
-                "stack_trace": traceback.format_exc()
+                "type": type(raised_exc).__name__,
+                "message": error_msg,
+                "stack_trace": safe_stack_trace
             }
         finally:
             _current_span_id.reset(token_span)
@@ -105,6 +117,7 @@ def trace(func):
             client.send_trace({"trace_id": trace_id, "spans": spans})
 
         if status == "failure":
-            raise Exception(error["message"])
+            if captured_exc:
+                raise captured_exc
         return result
     return wrapper
