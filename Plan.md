@@ -140,9 +140,9 @@ To make PrismTrace production-ready for large-scale, multi-agent AI workflows, t
 - [ ] Integrate with ClickHouse (mock for demo)
 
 ## 4. ClickHouse Database
-- [ ] Define minimal schema for traces/spans
-- [ ] Set up local ClickHouse instance (optional for demo)
-- [ ] Prepopulate with sample trace data
+- [x] Define minimal schema for traces/spans
+- [x] Set up local ClickHouse instance (optional for demo)
+- [x] Prepopulate with sample trace data
 
 ## 5. Next.js Frontend
 - [x] Scaffold Next.js app
