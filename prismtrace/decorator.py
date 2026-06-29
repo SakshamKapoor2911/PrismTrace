@@ -3,35 +3,19 @@ import requests
 from .client import TraceClient
 from .utils import generate_id, now_iso
 import traceback
+import sys
 import functools
 
 client = TraceClient()
-
-def groq_llm_call(prompt):
-    api_key = os.getenv("GROQ_API_KEY")
-    try:
-        response = requests.post(
-            "https://api.groq.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {api_key}"},
-            json={
-                "model": "gemini-1.5-pro",
-                "messages": [{"role": "user", "content": prompt}]
-            }
-        )
-        response.raise_for_status()
-        result = response.json()
-        return result["choices"][0]["message"]["content"], None
-    except Exception as e:
-        return None, str(e)
 
 def get_ai_metadata(prompt=None, response=None, error=None):
     return {
         "protocol_type": "MCP",
         "llm_model_name": "gemini-1.5-pro",
         "token_counts": {"prompt": 1024, "completion": 512},
-        "input_payload": prompt or "Sample prompt",
-        "output_payload": response or "Sample response",
-        "error_message": error or None
+        "input_payload": prompt,
+        "output_payload": response,
+        "error_message": error
     }
 
 def trace(func):
@@ -44,24 +28,35 @@ def trace(func):
         error = None
         status = "success"
         result = None
-        prompt = None
+        prompt = kwargs.get("prompt")
+        if not prompt and args and isinstance(args[0], str):
+            prompt = args[0]
         response = None
         error_msg = None
+        captured_exc = None
         try:
-            if agent_name == "child_agent_2":
-                prompt = "Tell me about the color of the number seven."
-                response, error_msg = groq_llm_call(prompt)
-                if error_msg:
-                    raise Exception(error_msg)
-                result = response
-            else:
-                result = func(*args, **kwargs)
-        except Exception as exc:
+            result = func(*args, **kwargs)
+            response = str(result) if result is not None else None
+        except Exception as raised_exc:
+            captured_exc = raised_exc
             status = "failure"
+            error_msg = str(raised_exc)
+
+            # Security Directive: Do not expose raw stack traces in error payloads.
+            # Extract safe stack trace information instead.
+            safe_stack_trace = ""
+            exc_type, exc_value, exc_tb = sys.exc_info()
+            if exc_tb is not None:
+                tb_list = traceback.extract_tb(exc_tb)
+                if tb_list:
+                    # Just the last file and line, not the full stack
+                    last_frame = tb_list[-1]
+                    safe_stack_trace = f"File {last_frame.filename}, line {last_frame.lineno}, in {last_frame.name}"
+
             error = {
-                "type": type(exc).__name__,
-                "message": str(exc),
-                "stack_trace": traceback.format_exc()
+                "type": type(raised_exc).__name__,
+                "message": error_msg,
+                "stack_trace": safe_stack_trace
             }
         end_time = now_iso()
         span_data = {
@@ -75,7 +70,7 @@ def trace(func):
             **get_ai_metadata(prompt, response, error_msg)
         }
         client.send_trace({"trace_id": generate_id(), "spans": [span_data]})
-        if status == "failure":
-            raise Exception(error["message"])
+        if status == "failure" and captured_exc:
+            raise captured_exc
         return result
     return wrapper

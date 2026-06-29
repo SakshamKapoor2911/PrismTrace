@@ -66,12 +66,14 @@ class TraceClient:
                     stack_lines = [line for line in stack.splitlines() if line.strip()]
                     if stack_lines:
                         print(f"{prefix}  {RED}Stack Trace: {stack_lines[-1]}{RESET}")
-            input_payload = span.get("input_payload")
-            output_payload = span.get("output_payload")
-            if input_payload:
-                print(f"{prefix}  Input: {input_payload}")
-            if output_payload:
-                print(f"{prefix}  Output: {output_payload}")
+
+        input_payload = span.get("input_payload")
+        output_payload = span.get("output_payload")
+        if input_payload:
+            print(f"{prefix}  Input: {input_payload}")
+        if output_payload:
+            print(f"{prefix}  Output: {output_payload}")
+
         # Print children if any
         if all_spans:
             children = [s for s in all_spans if s.get("parent_span_id") == span.get("span_id")]
