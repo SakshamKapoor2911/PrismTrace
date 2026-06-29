@@ -4,8 +4,13 @@ from .client import TraceClient
 from .utils import generate_id, now_iso
 import traceback
 import functools
+import contextvars
 
 client = TraceClient()
+
+_current_span_id = contextvars.ContextVar('current_span_id', default=None)
+_current_trace_id = contextvars.ContextVar('current_trace_id', default=None)
+_current_spans = contextvars.ContextVar('current_spans', default=None)
 
 def groq_llm_call(prompt):
     api_key = os.getenv("GROQ_API_KEY")
@@ -38,7 +43,22 @@ def trace(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         span_id = generate_id()
-        parent_span_id = None  # For demo, not tracking parent/child
+        parent_span_id = _current_span_id.get()
+
+        trace_id = _current_trace_id.get()
+        is_root = False
+        if trace_id is None:
+            trace_id = generate_id()
+            is_root = True
+
+        spans = _current_spans.get()
+        if spans is None:
+            spans = []
+
+        token_trace = _current_trace_id.set(trace_id)
+        token_span = _current_span_id.set(span_id)
+        token_spans = _current_spans.set(spans)
+
         agent_name = func.__name__
         start_time = now_iso()
         error = None
@@ -63,6 +83,11 @@ def trace(func):
                 "message": str(exc),
                 "stack_trace": traceback.format_exc()
             }
+        finally:
+            _current_span_id.reset(token_span)
+            _current_trace_id.reset(token_trace)
+            _current_spans.reset(token_spans)
+
         end_time = now_iso()
         span_data = {
             "span_id": span_id,
@@ -74,7 +99,11 @@ def trace(func):
             "error": error,
             **get_ai_metadata(prompt, response, error_msg)
         }
-        client.send_trace({"trace_id": generate_id(), "spans": [span_data]})
+        spans.append(span_data)
+
+        if is_root:
+            client.send_trace({"trace_id": trace_id, "spans": spans})
+
         if status == "failure":
             raise Exception(error["message"])
         return result
