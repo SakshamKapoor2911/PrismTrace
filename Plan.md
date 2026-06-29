@@ -151,7 +151,7 @@ To make PrismTrace production-ready for large-scale, multi-agent AI workflows, t
 - [x] Preload demo trace data for instant dashboard experience
 - [ ] Make spans clickable to show error details, stack trace, LLM input/output, protocol, and model info
 - [ ] Visualize call hierarchy with indentation/tree lines
-- [ ] Add filter/search bar for agents/errors
+- [x] Add filter/search bar for agents/errors
 - [ ] Add live/streaming mode to show new traces in real time
 - [ ] Deploy dashboard to Vercel
 
