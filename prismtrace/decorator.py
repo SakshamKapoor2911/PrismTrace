@@ -2,7 +2,6 @@ import os
 import requests
 from .client import TraceClient
 from .utils import generate_id, now_iso
-import traceback
 import functools
 
 client = TraceClient()
@@ -60,8 +59,7 @@ def trace(func):
             status = "failure"
             error = {
                 "type": type(exc).__name__,
-                "message": str(exc),
-                "stack_trace": traceback.format_exc()
+                "message": str(exc)
             }
         end_time = now_iso()
         span_data = {
